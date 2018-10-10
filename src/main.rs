@@ -25,7 +25,6 @@ struct Record {
 
 struct Config {
     api_key: String,
-    records: Vec<String>,
 }
 
 
@@ -41,10 +40,9 @@ fn load_config(config: &str) -> Result<Config, String> {
         None => return Err("failed to retrieve the field `api_key`".to_owned()),
     };
 
-    return Ok(Config{
+    Ok(Config{
         api_key: api_key.to_owned(),
-        records: Vec::new(),
-    });
+    })
 }
 
 fn get_public_ip() -> Result<String, reqwest::Error> {
@@ -73,11 +71,18 @@ fn run() -> i32 {
              .long("config")
              .value_name("FILE")
              .help("Sets a custom config file")
+             .required(true)
              .takes_value(true))
         .get_matches();
 
 
-    let config_file = matches.value_of("config").unwrap();
+    let config_file = match matches.value_of("config") {
+        Some(v) => v,
+        None => {
+            println!("failed to retrieve the value of `config`");
+            return 1;
+        },
+    };
 
     let config = match load_config(config_file) {
         Ok(v) => v,
