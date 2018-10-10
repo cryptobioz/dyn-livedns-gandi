@@ -59,7 +59,7 @@ fn get_public_ip() -> Result<String, reqwest::Error> {
 fn main() {
 
     let matches = App::new("dyn-livedns-gandi")
-        .version("1.0.0")
+        .version("0.0.1")
         .about("Update your Gandi LiveDNS records with your current IP address")
         .author("Léo Depriester")
         .arg(Arg::with_name("config")

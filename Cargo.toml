@@ -1,6 +1,6 @@
 [package]
-name = "dyn-gandi"
-version = "0.1.0"
+name = "dyn-livedns-gandi"
+version = "0.0.1"
 authors = ["Léo Depriester <leo.depriester@exadot.fr>"]
 
 [dependencies]
