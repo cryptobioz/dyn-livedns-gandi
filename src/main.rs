@@ -1,8 +1,10 @@
 #[macro_use]
 extern crate serde_derive;
 
-extern crate serde_json;
+#[cfg(test)]
 extern crate tempdir;
+
+extern crate serde_json;
 extern crate reqwest;
 extern crate clap;
 extern crate ini;
