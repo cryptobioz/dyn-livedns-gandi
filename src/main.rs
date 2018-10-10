@@ -10,6 +10,7 @@ extern crate clap;
 extern crate ini;
 use ini::Ini;
 use clap::{Arg, App};
+use std::process::exit;
 
 #[derive(Deserialize, Debug)]
 struct Ipinfo {
@@ -59,7 +60,10 @@ fn get_public_ip() -> Result<String, reqwest::Error> {
 }
 
 fn main() {
+    exit(run());
+}
 
+fn run() -> i32 {
     let matches = App::new("dyn-livedns-gandi")
         .version("0.0.1")
         .about("Update your Gandi LiveDNS records with your current IP address")
@@ -79,7 +83,7 @@ fn main() {
         Ok(v) => v,
         Err(e) => {
             println!("{}", e);
-            return;
+            return 1;
         },
     };
 
@@ -87,7 +91,7 @@ fn main() {
         Ok(v) => v,
         Err(e) => {
             println!("Error: {:?}", e);
-            return
+            return 1;
         }
     };
 
@@ -110,6 +114,7 @@ fn main() {
     } else {
         println!("Record updated failed.")
     }
+    return 0;
 }
 
 #[cfg(test)]
