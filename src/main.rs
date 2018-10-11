@@ -29,12 +29,16 @@ struct Config {
 
 
 fn load_config(config: &str) -> Result<Config, String> {
-    let conf = Ini::load_from_file(config).unwrap();
+    let conf = match Ini::load_from_file(config) {
+        Ok(v) => v,
+        Err(e) => return Err(format!("failed to read config file: {}", e)),
+    };
 
     let section = match conf.section(Some("main".to_owned())) {
         Some(v) => v,
         None => return Err("failed to read the section [main]".to_owned()),
     };
+
     let api_key = match section.get("api_key") {
         Some(v) => v,
         None => return Err("failed to retrieve the field `api_key`".to_owned()),
