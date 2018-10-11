@@ -25,6 +25,7 @@ struct Record {
 
 struct Config {
     api_key: String,
+    records: Vec<String>,
 }
 
 
@@ -44,8 +45,15 @@ fn load_config(config: &str) -> Result<Config, String> {
         None => return Err("failed to retrieve the field `api_key`".to_owned()),
     };
 
+    let records: Vec<String> = match section.get("records") {
+        Some(v) => v.split(',').map(|s| s.to_string()).collect(),
+        None => return Err("failed to retrieve the field `records`".to_owned()),
+    };
+
+
     Ok(Config{
         api_key: api_key.to_owned(),
+        records: records,
     })
 }
 
@@ -148,12 +156,6 @@ mod tests {
         };
         let file_path_str = file_path.to_str().unwrap();
 
-
-        //let expected_config = Config{
-        //    records: vec!(),
-        //    api_key: "foo".to_string(),
-        //};
-
         let result = load_config(file_path_str);
 
         match fs::remove_dir_all(dir) {
@@ -165,7 +167,6 @@ mod tests {
             Ok(_) => assert!(false, "api_key should be undefined"),
             Err(_) => assert!(true),
         };
-        //assert_eq!(expected_config.api_key, config.api_key);
     }
 
     #[test]
@@ -203,8 +204,9 @@ mod tests {
         let file_path = dir.path().join("config.ini");
         let mut file = File::create(&file_path).unwrap();
         match file.write_all(b"\
-        [main]\
-        api_key = foo\
+        [main]\n
+        api_key=foo\n
+        records=alpha,beta\n
         ") {
             Ok(_) => {},
             Err(e) => assert!(false, "failed to write fake config file: {}", e),
@@ -225,6 +227,9 @@ mod tests {
             Err(e) => return assert!(false, "failed to load config: {}", e),
         };
 
+        // API Key
         assert_eq!("foo", result.api_key, "Expected foo, got {}", result.api_key);
+        // Records
+        assert_eq!(vec!["alpha", "beta"], result.records, "Expected [alpha, beta], got {:?}", result.records);
     }
 }
