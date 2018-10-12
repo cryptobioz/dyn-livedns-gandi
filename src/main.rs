@@ -41,7 +41,7 @@ fn load_config(config: &str) -> Result<Config, String> {
     };
 
     let api_key = match section.get("api_key") {
-        Some(v) => v,
+        Some(v) => v.to_owned(),
         None => return Err("failed to retrieve the field `api_key`".to_owned()),
     };
 
@@ -52,8 +52,8 @@ fn load_config(config: &str) -> Result<Config, String> {
 
 
     Ok(Config{
-        api_key: api_key.to_owned(),
-        records: records,
+        api_key,
+        records,
     })
 }
 
@@ -112,24 +112,25 @@ fn run() -> i32 {
         }
     };
 
-    let record = Record{
-        rrset_values: vec![ip],
-    };
-
-
     let client = reqwest::Client::new();
 
-    let response = client
-    .put("https://dns.api.gandi.net/api/v5/zones/XXXXXXXXXXXXXXXX/records/foo/A")
-    .header(reqwest::header::CONTENT_TYPE, "application/json")
-    .header("X-Api-Key", config.api_key)
-    .body(serde_json::to_string(&record).unwrap())
-    .send().unwrap();
+    for record in config.records {
+        let r = Record{
+            rrset_values: vec![ip.to_owned()],
+        };
 
-    if response.status().is_success() {
-        println!("Record updated!");
-    } else {
-        println!("Record updated failed.")
+        let response = client
+        .put(&format!("https://dns.api.gandi.net/api/v5/zones/XXXXXXXXXXXXXXXX/records/{}/A", record))
+        .header(reqwest::header::CONTENT_TYPE, "application/json")
+        .header("X-Api-Key", config.api_key.to_owned())
+        .body(serde_json::to_string(&r).unwrap())
+        .send().unwrap();
+
+        if response.status().is_success() {
+            println!("Record updated!");
+        } else {
+            println!("Record updated failed.")
+        }
     }
     return 0;
 }
