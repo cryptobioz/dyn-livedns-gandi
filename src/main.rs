@@ -167,7 +167,7 @@ fn main() {
 
 fn run() -> i32 {
     let matches = App::new("dyn-livedns-gandi")
-        .version("0.0.1")
+        .version("1.0.0")
         .about("Update your Gandi LiveDNS records with your current IP address")
         .author("Léo Depriester")
         .arg(Arg::with_name("config")
