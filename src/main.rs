@@ -144,8 +144,8 @@ fn update_record(zone: &str, api_key: String, record: &str, ip: String) -> Resul
         rrset_values: vec![ip],
     };
     let client = reqwest::Client::new();
-    let mut response = match client
-        .put(&format!("https://dns.api.gandi.net/api/v5/zones/{}/records/{}/A", zone, record))
+    let response = match client
+        .put(&format!("{}/api/v5/zones/{}/records/{}/A", GANDI_URL, zone, record))
         .header(reqwest::header::CONTENT_TYPE, "application/json")
         .header("X-Api-Key", api_key)
         .body(serde_json::to_string(&r).unwrap())
@@ -157,16 +157,7 @@ fn update_record(zone: &str, api_key: String, record: &str, ip: String) -> Resul
     if response.status().is_success() {
         Ok(())
     } else {
-        let body = match response.text() {
-            Ok(v) => v,
-            Err(e) => return Err(format!("failed to read body: {:?}", e)),
-        };
-
-        let error: serde_json::Value = match serde_json::from_str(&body) {
-            Ok(v) => v,
-            Err(e) => return Err(format!("failed to decode body: {:?}", e)),
-        };
-        return Err(format!("failed to update record: {} - {}", error["cause"], error["message"]));
+        return Err(format!("failed to update record, status code received {}", response.status()));
     }
 }
 
@@ -403,5 +394,23 @@ mod tests {
             Ok(_) => assert!(false, "an error should be raised"),
             Err(_) => assert!(true),
         };
+    }
+
+    #[test]
+    fn update_record_valid() {
+        // Mocking
+        let data = r#"{
+            "message": "Zone Record Created"
+        }"#;
+        let _m = mock("PUT", "/api/v5/zones/foo/records/bar/A")
+            .with_status(201)
+            .with_header("Content-Type", "application/json")
+            .with_body(data)
+            .create();
+
+        match update_record("foo", String::from("f4keAp1K3y"), "bar", String::from("127.0.0.1")) {
+            Ok(_) => assert!(true),
+            Err(e) => assert!(false, "no error should be raised: {:?}", e),
+        }
     }
 }
